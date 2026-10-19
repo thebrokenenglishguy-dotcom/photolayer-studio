@@ -73,7 +73,13 @@ $('quality').addEventListener('input',updateOutputs);
 function selectLook(name){look=name;document.querySelectorAll('.preset').forEach(b=>b.classList.toggle('active',b.dataset.look===name));if(name!=='original'&&presets[name])setValues({...values(),...presets[name]});else if(name==='original')setValues({...values(),...presets.original});else applyPreview()}
 document.querySelectorAll('.preset').forEach(b=>b.addEventListener('click',()=>{if(!originalImage)return;pushHistory();selectLook(b.dataset.look);announce(b.textContent.trim()+' look applied')}));
 document.querySelectorAll('[data-tab]').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('[data-tab]').forEach(x=>x.classList.toggle('active',x===b));document.querySelectorAll('.tab-panel').forEach(p=>p.classList.toggle('hidden',p.id!=='tab-'+b.dataset.tab))}));
-ids.forEach(id=>$(id).addEventListener('change',()=>{if(originalImage)pushHistory()}));
+let adjustmentGesture=false;
+ids.forEach(id=>{
+  const begin=()=>{if(originalImage&&!adjustmentGesture){pushHistory();adjustmentGesture=true}};
+  $(id).addEventListener('pointerdown',begin);
+  $(id).addEventListener('keydown',e=>{if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Home','End','PageUp','PageDown'].includes(e.key))begin()});
+  $(id).addEventListener('change',()=>{adjustmentGesture=false});
+});
 $('auto').onclick=()=>{if(!originalImage)return;pushHistory();const v=values();v.brightness=Math.min(120,Math.max(96,v.brightness));v.contrast=Math.max(105,v.contrast);v.saturation=Math.min(125,Math.max(95,v.saturation));setValues(v);announce('Auto enhance applied · adjust further if needed')};
 $('resetAdjust').onclick=()=>{if(!originalImage)return;pushHistory();setValues({...values(),...defaults});look='original';selectLook('original');announce('Adjustments reset')};
 $('reset').onclick=()=>{if(!originalImage)return;pushHistory();rotation=0;flipH=1;flipV=1;squareCrop=false;setValues(defaults);selectLook('original');announce('Photo edits reset')};
